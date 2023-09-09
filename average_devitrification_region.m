@@ -1,0 +1,35 @@
+sigmas=38.6;
+boxsiz=1;
+% x=0:sigma:4300;
+% y=0:sigma:4300;
+for i=1000:1:12235
+    f=hard_particles_all(:,3)==i;
+    A1=hist3(hard_particles_all(f,5:6),'Edges',{((0):((boxsiz)*sigmas):4300) ((0):((boxsiz)*sigmas):4300)});
+    f=A1>1;
+    A1(f)=1;
+    A1=A1*-2;
+    f=soft_particles_all1(:,3)==i;
+    A2=hist3(soft_particles_all1(f,5:6),'Edges',{((0):((boxsiz)*sigmas):4300) ((0):((boxsiz)*sigmas):4300)});
+    f=A2>1;
+    A2(f)=1;
+    A2=A2*2;
+    f=req_coor1(:,3)==i;
+    A3=hist3(req_coor1(f,5:6),'Edges',{((0):((boxsiz)*sigmas):4300) ((0):((boxsiz)*sigmas):4300)});
+    f=A3>1;
+    A3(f)=1;
+    A3=A3*1;
+    f=req_coor2(:,3)==i;
+    A4=hist3(req_coor2(f,5:6),'Edges',{((0):((boxsiz)*sigmas):4300) ((0):((boxsiz)*sigmas):4300)});
+    f=A4>1;
+    A4(f)=1;
+    A4=A4*-1;
+    f=psi6_count(:,3)==i;
+    A5=hist3(psi6_count(f,4:5),'Edges',{((0):((boxsiz)*sigmas):4300) ((0):((boxsiz)*sigmas):4300)});
+    f=A5>1;
+    A5(f)=1;
+    A5=A5*3;
+    A=A1+A2+A3+A4+A5;
+    pcolor(A);
+    caxis([-2 3]);
+    colormap(jet);
+end

@@ -1,0 +1,67 @@
+% to find the soft particles in the system
+% clearvars -except H
+% H1 is the track of required small/big particle coordinates dedrifted
+% f=H(:,5)<=400;
+% A=H(f,4);
+% binranges=1:max(A);
+% B=histc(A,binranges);
+% f=(B>=10);
+% C=nonzeros(binranges'.*f);
+% D=ismember(H(:,4),A);
+% H1=H(D,:);
+% H2=setdiff(H,H1,'rows');
+% clearvars -except H H2
+% clearvars -except H H1
+% H1=H;
+% clearvars -except H
+n=max(H(:,4));
+deltat=10;
+sigma=18;     %diameter of the large particle, first peak of radial distribution function
+phop_all=[];
+for i=1+(deltat/2):1:(n-(deltat/2))
+    %i defines t
+    %identification of tracks that stayed for deltat
+    f1=(H(:,4)==(i-(deltat/2)));
+    T1=H(f1,5);
+    f2=(H(:,4)==(i+(deltat/2)));
+    T2=H(f2,5);
+    T=intersect(T1,T2);
+    f=ismember(H(:,5),T);
+    req_tracks=H(f,:);
+%     clearvars -except req_tracks H H n deltat i phop_all sigma
+    %req_tracks contains the trajectories of the particles present in the
+    %duration deltat beginining from i-(deltat/2)
+    % i is equivalent to t
+    %calculating hop for each particle at ith frame
+    %period of A
+    f=(req_tracks(:,4)>=(i-(deltat/2)) & req_tracks(:,4)<=i);
+    req_tracks1=req_tracks(f,:);
+    %period of B
+    f=(req_tracks(:,4)>=i & req_tracks(:,4)<=(i+(deltat/2)));
+    req_tracks2=req_tracks(f,:);
+    ria_mean1=accumarray(req_tracks1(:,5),req_tracks1(:,1),[],@mean);
+    ria_mean2=accumarray(req_tracks1(:,5),req_tracks1(:,2),[],@mean);
+    ria_mean3=accumarray(req_tracks1(:,5),req_tracks1(:,3),[],@mean);
+    rib_mean1=accumarray(req_tracks2(:,5),req_tracks2(:,1),[],@mean);
+    rib_mean2=accumarray(req_tracks2(:,5),req_tracks2(:,2),[],@mean);
+    rib_mean3=accumarray(req_tracks2(:,5),req_tracks2(:,3),[],@mean);
+    req_tracks1(:,6)=req_tracks1(:,1)-rib_mean1(req_tracks1(:,5));
+    req_tracks1(:,7)=req_tracks1(:,2)-rib_mean2(req_tracks1(:,5));
+    req_tracks1(:,8)=req_tracks1(:,3)-rib_mean3(req_tracks1(:,5));
+    req_tracks2(:,6)=req_tracks2(:,1)-ria_mean1(req_tracks2(:,5));
+    req_tracks2(:,7)=req_tracks2(:,2)-ria_mean2(req_tracks2(:,5));
+    req_tracks2(:,8)=req_tracks2(:,3)-ria_mean3(req_tracks2(:,5));
+%     clear ria_mean1 ria_mean2 rib_mean1 rib_mean2
+    req_tracks1(:,9)=(req_tracks1(:,6).^2)+(req_tracks1(:,7).^2)+(req_tracks1(:,8).^2);
+    req_tracks2(:,9)=(req_tracks2(:,6).^2)+(req_tracks2(:,7).^2)+(req_tracks2(:,8).^2);
+    phop1=accumarray(req_tracks1(:,5),req_tracks1(:,9),[],@mean);
+    phop2=accumarray(req_tracks2(:,5),req_tracks2(:,9),[],@mean);
+    phop=(phop1.*phop2).^(0.5);
+    f=unique(req_tracks(:,5));
+    phop=phop(f);
+    f=(req_tracks(:,4)==i);
+    req_coordinates=req_tracks(f,:);
+    phop=horzcat(phop, req_coordinates);
+    phop_all=vertcat(phop_all,phop);
+end
+phop_all(:,1)=phop_all(:,1)/((sigma)^2);
